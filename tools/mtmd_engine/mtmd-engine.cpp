@@ -94,7 +94,6 @@ struct InferEngine::Impl{
     const llama_vocab* vocab{nullptr};
     common_sampler* smpl{nullptr};
     llama_batch         batch{};
-    int                 n_batch{2048};
 
     mtmd::bitmaps bitmaps;
 
@@ -161,6 +160,7 @@ struct InferEngine::Impl{
         ctx_arg.params.n_predict = config_param.max_predict_token_count;
         ctx_arg.params.n_ctx = config_param.n_ctx;
         ctx_arg.params.mmproj_use_gpu = true;
+        ctx_arg.params.n_batch = config_param.n_batch;
 
         // sampler
         ctx_arg.params.sampling.temp = 0;
@@ -213,7 +213,6 @@ struct InferEngine::Impl{
         smpl = common_sampler_init(model, llama_param.sampling);
         //n_threads = llama_param.cpuparams.n_threads;
         batch = llama_batch_init(1, 0, 1); // batch for next token generation
-        n_batch = llama_param.n_batch;
 
         if (!model || !lctx) {
             return write_log(LogLevel::kLogCritical, __FILE__, __LINE__, "Fail to load model.");
@@ -320,7 +319,7 @@ struct InferEngine::Impl{
     Status eval_message(common_chat_msg& msg) {
         timer.start();
         llama_batch_free(batch);
-        batch = llama_batch_init(n_batch, 0, 1); // batch for next token generation
+        batch = llama_batch_init(1, 0, 1); // batch for next token generation
         timer.print_time("init_batch");
         bool add_bos = chat_history.empty();
         auto formatted_chat = chat_add_and_format(msg);
@@ -351,7 +350,7 @@ struct InferEngine::Impl{
                                     chunks.ptr.get(), // chunks
                                     n_past, // n_past
                                     0, // seq_id
-                                    n_batch, // n_batch
+                                    config_param.n_batch, // n_batch
                                     true, // logits_last
                                     &new_n_past)) {
             return { -LogLevel::kLogError, "Fail to eval input." };
@@ -508,13 +507,11 @@ Status InferEngine::to_gpu(){
 }
 
 Status InferEngine::infer(const InferInput& input, InferResult& result){
-    //impl_->n_batch = 1;
     return impl_->infer(input, result);
 }
 
 
 Status InferEngine::infer_batch(const std::vector<InferInput>& inputs, std::vector<InferResult>& results){
-    //impl_->n_batch = inputs.size();
     return impl_->infer_batch(inputs, results);
 }
 }
