@@ -97,13 +97,13 @@ void engine2() {
 }
 
 
-int main() {
+int main(int argc, char**argv) {
     std::thread task2(engine2);
-
+    size_t device = std::atoi(argv[1]);
 
     //test_mem_file();
     llama_engine::InferInput input;
-    input.img_bufs = load_img_file("e:/wafer.png");
+    input.img_bufs = load_img_file("D:/haoran.zu/vs_workspace/xinshangeweizhuang/test/test_datas/wafer_id/wafer_id0.jpg");
     //input.img_bufs = load_img_file("G:/model_test/xin_shang_wei_zhuang/20201016065520_S[25]_waferid.jpg");
 
     llama_engine::InferResult res;
@@ -113,6 +113,7 @@ int main() {
     param.gpu_layer_count = 99;
     param.log_call_back = log_call;
     param.max_predict_token_count=32;
+    param.gpu_devices = {device};
     param.fit_param = false;
 
     llama_engine::InferEngine engine;
@@ -129,8 +130,10 @@ int main() {
         //"d:/qwen/mmproj-Qwen3VL-2B-Instruct-F16.gguf"
         //"d:/qwen/official_gguf/Qwen3VL-2B-Instruct-Q4_K_M.gguf",
         //"d:/qwen/official_gguf/mmproj-Qwen3VL-2B-Instruct-Q8_0.gguf"
-        "g:/model_test/qwen/Qwen3VL-2B-Instruct-Q4_K_M.gguf",
-        "g:/model_test/qwen/mmproj-Qwen3VL-2B-Instruct-Q8_0.gguf"
+        //"g:/model_test/qwen/Qwen3VL-2B-Instruct-Q4_K_M.gguf",
+        //"g:/model_test/qwen/mmproj-Qwen3VL-2B-Instruct-Q8_0.gguf"
+        "D:/haoran.zu/no_encry/ocr_model_10.vfmodel",
+        "D:/haoran.zu/no_encry/ocr_model_20.vfmodel"
     );
     //status = engine.load_model_from_buffer((char*)model_buf.data(), model_buf.size(), (char*)mmproj_buf.data(), mmproj_buf.size());
     auto start1 = std::chrono::system_clock::now();
